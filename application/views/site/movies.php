@@ -21,13 +21,13 @@
                             <h5 class="text-info">Films Name</h5>
                             <h6 style="margin-bottom: 13px;"> <?= $data["filmsInfo"][0]["name"]; ?></h6>
                             <h5 class="text-info">Release Year</h5>
-                            <h6 style=""><?= $data["filmsInfo"][0]["release_year"]; ?></h6>
+                            <h6 style=""><?= $data["filmsInfo"][0]["relese_year"]; ?></h6>
                         </div>
                         <div style="margin-left: 15px;">
                             <h5 class="text-info">Genre</h5>
-                            <h6 style="margin-bottom: 13px;"> <?= $data["filmsInfo"][0]["Genre"]; ?></h6>
+                            <h6 style="margin-bottom: 13px;"> <?= $data["filmsInfo"][0]["genre"]; ?></h6>
                             <h5 class="text-info">Time Count</h5>
-                            <h6 style=""> <?= $data["filmsInfo"][0]["Time_count"]; ?></h6>
+                            <h6 style=""> <?= $data["filmsInfo"][0]["time_count"]; ?></h6>
                         </div>
                         <div style="margin-left: 15px;">
                             <h5 class="text-info"></h5>
@@ -61,11 +61,15 @@
                 <label for="dayTime">
                     <select class="form-control" name="dayTime" id="daytime">
                         <option value="">---</option>
-                        <?php foreach ($data["dateTime"] as $k => $v) { ?>
 
-                            <option id="<?= $v["id"]; ?>"
-                                    value="<?= $v["start"]; ?> - <?= $v["end"]; ?>"><?= $v["start"]; ?>
-                                - <?= $v["end"]; ?></option>
+                        <?php
+                        foreach ($data["dateTime"] as $d => $datum) {
+                            foreach ($datum as $k => $v) { ?>
+
+                                <option id="<?= $data["selectId"][$d]; ?>"
+                                        value="<?= $v["start"]; ?> - <?= $v["end"]; ?>"><?= $v["start"]; ?>
+                                    - <?= $v["end"]; ?></option>
+                            <?php } ?>
                         <?php } ?>
 
                     </select>
@@ -73,7 +77,7 @@
             </div>
             <div id="movies" datatype="<?= $data["filmsInfo"][0]['id']; ?>"></div>
             <div id="cinemas" datatype="<?= $data["filmsInfo"][0]['cimes_id']; ?>"></div>
-            <div id="chair" style="margin-top: 15px;" >
+            <div id="chair" style="margin-top: 15px;">
                 <div id="sidaunt" class="container" style="background:#343a40;border-radius: 5px;">
 
                 </div>
@@ -116,58 +120,62 @@
     //     }
     // });
 
-    let DandT = "";
-    let GlobMov = "";
-    let GlobCinems = "";
-    let GlobSelectID = "";
+    // let DandT = "";
+    // let GlobMov = "";
+    // let GlobCinems = "";
+    let GlobstartTimeId = "";
     $("#daytime").change(function () {
 
-        let mov = $('#movies').attr('datatype');
-        let cinems = $('#cinemas').attr('datatype');
-        let dateTime = $(this).val();
-        let DTid = $(this).children(":selected").attr("id");
 
-        DandT = dateTime;
-        GlobMov = mov;
-        GlobCinems = cinems;
-        GlobSelectID = DTid;
-
-        // console.log(GlobSelectID);
-        $("#buyDiv").children().remove();
-        $("#sidaunt").children().remove();
-        let vallone = "";
-        let valltwo = "";
+        //
+        // let mov = $('#movies').attr('datatype');
+        // let cinems = $('#cinemas').attr('datatype');
+        // let dateTime = $(this).val();
+        let startTimeId = $(this).children(":selected").attr("id");
+        //console.log(startTimeId);
+        //
+        // DandT = dateTime;
+        // GlobMov = mov;
+        // GlobCinems = cinems;
+        GlobstartTimeId = startTimeId;
+        //
+        // // console.log(GlobSelectID);
+        // $("#buyDiv").children().remove();
+        // $("#sidaunt").children().remove();
+        // let vallone = "";
+        // let valltwo = "";
         let buyArray = [];
-        //, dateTime: dateTime
-
+        // //, dateTime: dateTime
+        //
         $.ajax({
             url: window.location.origin + '/site/datetime',
             type: 'post',
             dataType: 'json',
-            data: {mov: mov, cinems: cinems, selectId: GlobSelectID},
+            // data: {mov: mov, cinems: cinems, selectId: GlobSelectID},
+            data: {time: startTimeId},
             success: function (data) {
-
+                //console.log(data);
                 $("sidaunt").children().remove();
-
+                //
                 data.forEach((i, k) => {
                     buyArray.push(+i.chair_number);
                 });
-
+                //
                 for (let i = 1; i <= 5; i++) {
                     $('#sidaunt').append('<div id="row' + i + '" class="d-flex justify-content-between" > </div>');
                     if (i === 1) {
                         vallone = 1;
                         valltwo = 10;
                     } else {
-                        vallone = (i - 1) * 10+1;
+                        vallone = (i - 1) * 10 + 1;
                         valltwo = vallone + 9;
                     }
 
                     for (let z = vallone; z <= valltwo; z++) {
-                        let but= buyArray.includes(z);
-                        if (but===true){
+                        let but = buyArray.includes(z);
+                        if (but === true) {
                             $('#row' + i).append('<button class="btn btn-danger" disabled> ' + z + ' </button>')
-                        }else {
+                        } else {
                             $('#row' + i).append('<button id="' + z + '" class="btn btn-success button" onclick="buy(' + z + ')"> ' + z + ' </button>')
                         }
 
@@ -201,14 +209,14 @@
 
             }
         });
-        // console.log(buyArray);
-        // console.log($(this).val())
+        // // console.log(buyArray);
+        // // console.log($(this).val())
     });
 
     function buy(arg) {
         $("#buyDiv").children().remove();
         // alert(DandT);
-        // console.log(arg);
+         console.log(GlobstartTimeId);
         var c = confirm("Buy?");
 
         if (c === true) {
@@ -216,12 +224,13 @@
                 url: window.location.origin + '/site/buy',
                 type: 'post',
                 dataType: 'json',
-                data: {arg: arg, dateAndTime: DandT, mov: GlobMov, cinems: GlobCinems, selectId: GlobSelectID},
+                data: {arg:arg,comm_id:GlobstartTimeId,},
                 success: function (data) {
+                    //console.log(data);
                     if (data === 1) {
-                        $("#"+arg).removeClass();
-                        $("#"+arg).addClass("btn btn-danger");
-                        $("#"+arg).prop( "disabled", true );
+                        $("#" + arg).removeClass();
+                        $("#" + arg).addClass("btn btn-danger");
+                        $("#" + arg).prop("disabled", true);
                         $("#buyDiv").append('<h4>You Have buy Ticek</h4>')
                         // window.location = '/movies/'+GlobMov;
                     }
@@ -259,6 +268,6 @@
 //
 //
 //echo "<pre>";
-//var_dump($data);
+//var_dump($data["selectId"][0]);
 //echo "</pre>";
 ?>
